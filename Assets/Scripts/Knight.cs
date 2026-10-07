@@ -3,36 +3,35 @@ using UnityEngine;
 
 public class Knight : ChessPiece
 {
-    public override List<Vector2Int> GetAvailableMoves(GameObject[,] board)
+    // [핵심 수정] pieceMap 매개변수를 함께 받아오도록 서명 변경
+    public override List<Vector2Int> GetAvailableMoves(Dictionary<Vector2Int, CellType> battleMap, Dictionary<Vector2Int, ChessPiece> pieceMap)
     {
         List<Vector2Int> moves = new List<Vector2Int>();
         
-        // 나이트가 이동할 수 있는 8가지 방향 L자 패턴
+        // 나이트의 L자 8방향
         int[] dx = { 1, 2, 2, 1, -1, -2, -2, -1 };
         int[] dy = { 2, 1, -1, -2, -2, -1, 1, 2 };
 
         for (int i = 0; i < 8; i++)
         {
-            int targetX = currentX + dx[i];
-            int targetY = currentY + dy[i];
+            Vector2Int targetPos = new Vector2Int(currentX + dx[i], currentY + dy[i]);
 
-            // 1. 체스판 8x8 범위 안인지 확인
-            if (targetX >= 0 && targetX < 8 && targetY >= 0 && targetY < 8)
+            // 1. 맵 범위를 벗어난 곳이면 패스
+            if (!battleMap.ContainsKey(targetPos)) continue;
+
+            // 2. 착지할 칸이 벽이나 장애물이면 패스
+            if (battleMap[targetPos] == CellType.Blocked) continue;
+
+            // 3. 해당 칸에 다른 기물이 존재하는 경우 검사
+            if (pieceMap != null && pieceMap.ContainsKey(targetPos))
             {
-                GameObject targetObj = board[targetX, targetY];
-                
-                // 2. 빈 칸이거나
-                if (targetObj == null) 
-                {
-                    moves.Add(new Vector2Int(targetX, targetY));
-                }
-                // 3. 적 기물이 있다면 이동 가능 (아군이면 불가)
-                else if (targetObj.GetComponent<ChessPiece>().team != this.team) 
-                {
-                    moves.Add(new Vector2Int(targetX, targetY));
-                }
+                // 같은 팀 기물이 이미 자리를 차지하고 있다면 이동 불가
+                if (pieceMap[targetPos].team == this.team) continue;
             }
+
+            moves.Add(targetPos);
         }
+
         return moves;
     }
 }

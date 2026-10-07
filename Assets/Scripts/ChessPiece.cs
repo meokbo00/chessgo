@@ -9,7 +9,9 @@ public abstract class ChessPiece : MonoBehaviour
     public int currentX;
     public int currentY;
 
-    // 핵심: 자식 기물(나이트, 룩 등)이 무조건 자기만의 규칙으로 덮어써야(Override) 하는 함수
-    // 현재 보드 상태를 보고, 자신이 이동할 수 있는 모든 좌표 리스트를 반환합니다.
-    public abstract List<Vector2Int> GetAvailableMoves(GameObject[,] board);
+    // 타일맵 지형 정보(mapData)와 필드의 기물 정보(units)를 전달받아 이동 가능 칸 반환
+    public abstract List<Vector2Int> GetAvailableMoves(
+        Dictionary<Vector2Int, CellType> mapData, 
+        Dictionary<Vector2Int, ChessPiece> units = null
+    );
 }

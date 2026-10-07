@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Rook : ChessPiece
 {
-    public override List<Vector2Int> GetAvailableMoves(GameObject[,] board)
+    public override List<Vector2Int> GetAvailableMoves(Dictionary<Vector2Int, CellType> battleMap, Dictionary<Vector2Int, ChessPiece> pieceMap)
     {
         List<Vector2Int> moves = new List<Vector2Int>();
         
@@ -15,42 +15,34 @@ public class Rook : ChessPiece
             new Vector2Int(1, 0)   // 오른쪽
         };
 
-        // 4방향을 각각 한 줄씩 끝까지 검사합니다.
         foreach (Vector2Int dir in directions)
         {
-            int x = currentX;
-            int y = currentY;
-
-            while (true) // 계속 직진!
+            int step = 1;
+            while (true)
             {
-                x += dir.x;
-                y += dir.y;
+                Vector2Int targetPos = new Vector2Int(currentX + (dir.x * step), currentY + (dir.y * step));
 
-                // 1. 체스판 범위를 벗어나면 이 방향은 탐색을 멈춥니다.
-                if (x < 0 || x >= 8 || y < 0 || y >= 8)
-                    break;
+                // 1. 맵 바깥(허공)이면 이 방향 탐색 중단
+                if (!battleMap.ContainsKey(targetPos)) break;
 
-                GameObject targetObj = board[x, y];
+                // 2. 벽이나 책상(Blocked) 등 장애물이 막고 있다면 탐색 중단
+                if (battleMap[targetPos] == CellType.Blocked) break;
 
-                // 2. 빈 칸인 경우: 이동 가능 목록에 넣고 '다음 칸'으로 계속 전진
-                if (targetObj == null)
+                // 3. 기물이 배치되어 있는지 검사
+                if (pieceMap != null && pieceMap.ContainsKey(targetPos))
                 {
-                    moves.Add(new Vector2Int(x, y));
-                }
-                // 3. 기물에 막힌 경우
-                else
-                {
-                    ChessPiece otherPiece = targetObj.GetComponent<ChessPiece>();
-                    
-                    // 만약 적군이라면 잡아먹을 수 있으므로 그 칸(적의 위치)까지는 갈 수 있습니다.
-                    if (otherPiece != null && otherPiece.team != this.team)
+                    // 적 기물인 경우 공격할 수 있으므로 해당 칸까지 추가 후 전진 중단
+                    if (pieceMap[targetPos].team != this.team)
                     {
-                        moves.Add(new Vector2Int(x, y));
+                        moves.Add(targetPos);
                     }
-                    
-                    // 적군이든 아군이든 누군가에게 막혔다면 그 너머로는 못 가므로 전진을 멈춥니다.
-                    break; 
+                    // 아군이든 적군이든 기물에 가로막혔으므로 전진 중단
+                    break;
                 }
+
+                // 4. 빈 바닥인 경우 이동 가능 목록에 넣고 계속 직진
+                moves.Add(targetPos);
+                step++;
             }
         }
 
