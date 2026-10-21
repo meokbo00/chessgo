@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HighlightTile
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.Tilemaps.Tile
   m_Sprite: {fileID: 7482667652216324306, guid: c02ddfc660578f04792f597019c335c1, type: 3}
-  m_Color: {r: 0.19339621, g: 1, b: 0.6653202, a: 0.6039216}
+  m_Color: {r: 0.19339621, g: 1, b: 0.6653202, a: 0.3137255}
   m_Transform:
     e00: 1
     e01: 0

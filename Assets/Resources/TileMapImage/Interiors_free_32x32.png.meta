@@ -24686,6 +24686,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Interiors_free_32x32_1117
+      rect:
+        serializedVersion: 2
+        x: 422
+        y: 2144
+        width: 48
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 18376a5af1a94534faa210d68073a44c
+      internalID: -1684578807
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -24835,6 +24857,7 @@ TextureImporter:
       Interiors_free_32x32_1114: 571511116
       Interiors_free_32x32_1115: 1850882767
       Interiors_free_32x32_1116: -1949420095
+      Interiors_free_32x32_1117: -1684578807
       Interiors_free_32x32_112: -869882760
       Interiors_free_32x32_113: 479108668
       Interiors_free_32x32_114: -466122894
