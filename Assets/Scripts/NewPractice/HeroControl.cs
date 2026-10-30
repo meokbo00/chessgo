@@ -52,6 +52,10 @@ public class HeroControl : MonoBehaviour
 
         currentCell = grid.WorldToCell(transform.position);
         SnapToCurrentCell();
+
+        // MapScanner에 Hero 위치 등록
+        if (mapScanner != null)
+            mapScanner.RegisterHero(currentCell);
     }
 
     // WASD 한 칸 이동과 마우스 클릭(경로 표시/이동)을 처리한다.
@@ -301,6 +305,10 @@ public class HeroControl : MonoBehaviour
     {
         currentCell = cell;
         SnapToCurrentCell();
+
+        // MapScanner에 Hero 위치 갱신
+        if (mapScanner != null)
+            mapScanner.RegisterHero(currentCell);
     }
 
     // Blocked, Cliff(맵 밖 포함)는 들어갈 수 없다.

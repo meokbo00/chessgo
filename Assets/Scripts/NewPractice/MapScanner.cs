@@ -24,8 +24,14 @@ public class MapScanner : MonoBehaviour
     // 상호작용 가능한 오브젝트들을 좌표별로 관리 (한 칸에 여러 오브젝트 가능)
     private readonly Dictionary<Vector3Int, List<InteractableObject>> interactables = new();
 
+    // Hero와 Enemy의 위치 추적 (충돌 방지용)
+    private Vector3Int? heroCell;
+    private readonly Dictionary<Vector3Int, EnemyControl> enemyPositions = new();
+
     public IReadOnlyDictionary<Vector3Int, CellType> Cells => cells;
     public IReadOnlyDictionary<Vector3Int, List<InteractableObject>> Interactables => interactables;
+    public Vector3Int? HeroCell => heroCell;
+    public IReadOnlyDictionary<Vector3Int, EnemyControl> EnemyPositions => enemyPositions;
 
     // 다른 스크립트(Start)보다 먼저 맵을 읽어 두기 위해 Awake에서 스캔한다.
     private void Awake()
@@ -48,6 +54,7 @@ public class MapScanner : MonoBehaviour
     }
 
     // Floor만 이동 가능. Blocked와 Cliff는 false. InteractableObject 중 isBlock이 있는 게 있으면 false.
+    // Hero나 Enemy가 있는 칸도 이동 불가.
     public bool IsWalkable(Vector3Int cell)
     {
         if (GetCellType(cell) != CellType.Floor)
@@ -62,7 +69,115 @@ public class MapScanner : MonoBehaviour
             }
         }
 
+        // Hero가 있는 칸은 이동 불가
+        if (heroCell.HasValue && heroCell.Value == cell)
+            return false;
+
+        // Enemy가 있는 칸은 이동 불가
+        if (enemyPositions.ContainsKey(cell))
+            return false;
+
         return true;
+    }
+
+    // Hero의 위치를 등록/갱신한다.
+    public void RegisterHero(Vector3Int cell)
+    {
+        heroCell = cell;
+    }
+
+    // Hero의 위치를 제거한다.
+    public void UnregisterHero()
+    {
+        heroCell = null;
+    }
+
+    // Enemy의 위치를 등록/갱신한다.
+    public void RegisterEnemy(EnemyControl enemy, Vector3Int cell)
+    {
+        if (enemy == null)
+            return;
+
+        // 기존 위치 제거 (이전 currentCell)
+        enemyPositions.Remove(enemy.CurrentCell);
+        // 새 위치 등록
+        enemyPositions[cell] = enemy;
+    }
+
+    // Enemy의 이동을 시작할 때 호출 (이전 위치 제거, 타겟 위치 등록)
+    public void OnEnemyMoveStart(EnemyControl enemy, Vector3Int fromCell, Vector3Int toCell)
+    {
+        if (enemy == null)
+            return;
+
+        // 이전 위치 제거
+        enemyPositions.Remove(fromCell);
+        // 타겟 위치 등록 (이동 중이므로)
+        enemyPositions[toCell] = enemy;
+    }
+
+    // Enemy의 위치를 제거한다.
+    public void UnregisterEnemy(EnemyControl enemy)
+    {
+        if (enemy == null)
+            return;
+
+        enemyPositions.Remove(enemy.CurrentCell);
+    }
+
+    // 충돌 시 Enemy가 피할 수 있는 주변 칸을 찾는다.
+    public Vector3Int? FindAlternativeCell(EnemyControl enemy, Vector3Int originalTarget)
+    {
+        if (enemy == null)
+            return null;
+
+        // 8방향 탐색
+        Vector3Int[] directions = {
+            Vector3Int.up, Vector3Int.down, Vector3Int.left, Vector3Int.right,
+            new Vector3Int(1, 1, 0), new Vector3Int(1, -1, 0),
+            new Vector3Int(-1, 1, 0), new Vector3Int(-1, -1, 0)
+        };
+
+        // 원래 타겟 주변 칸 탐색
+        foreach (var dir in directions)
+        {
+            Vector3Int candidate = originalTarget + dir;
+
+            // 이동 가능한지 확인
+            if (!IsWalkable(candidate))
+                continue;
+
+            // 다른 Enemy가 있는지 확인 (자신 제외)
+            if (enemyPositions.TryGetValue(candidate, out var otherEnemy) && otherEnemy != enemy)
+                continue;
+
+            // Hero가 있는지 확인
+            if (heroCell.HasValue && heroCell.Value == candidate)
+                continue;
+
+            return candidate;
+        }
+
+        // 원래 타겟 주변에 없으면 현재 위치 주변 탐색
+        Vector3Int currentPos = enemy.CurrentCell;
+        foreach (var dir in directions)
+        {
+            Vector3Int candidate = currentPos + dir;
+
+            if (!IsWalkable(candidate))
+                continue;
+
+            if (enemyPositions.TryGetValue(candidate, out var otherEnemy) && otherEnemy != enemy)
+                continue;
+
+            if (heroCell.HasValue && heroCell.Value == candidate)
+                continue;
+
+            return candidate;
+        }
+
+        // 피할 곳이 없으면 null 반환
+        return null;
     }
 
     // 해당 칸이 스캔 결과에 있으면 true와 함께 타입을 넘겨준다. 없으면 false.
