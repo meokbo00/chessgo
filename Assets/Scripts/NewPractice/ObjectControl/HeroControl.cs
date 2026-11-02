@@ -18,6 +18,9 @@ public class HeroControl : MonoBehaviour
     private readonly HashSet<Vector3Int> possibleMoves = new();
     private bool isShowingMoves;
 
+    // 전투 모드 일시정지 상태
+    private bool isPaused = false;
+
     // 더블탭 상호작용 관련 변수
     [Header("상호작용 설정")]
     [SerializeField] private float doubleTapWindow = 0.3f;
@@ -67,13 +70,25 @@ public class HeroControl : MonoBehaviour
             CombatManager.Instance?.ToggleCombatMode();
         }
 
-        HandleMouseClick();
+        // 전투 모드일 때는 이동만 중단 (다른 기능은 계속 실행 가능)
+        if (!isPaused)
+        {
+            HandleMouseClick();
 
-        Vector3Int direction = ReadMoveDirection();
-        if (direction == Vector3Int.zero)
-            return;
+            Vector3Int direction = ReadMoveDirection();
+            if (direction != Vector3Int.zero)
+            {
+                TryMove(direction);
+            }
+        }
 
-        TryMove(direction);
+        // 여기에 나중에 다른 기능 추가 가능 (전투 모드와 상관없이 실행)
+    }
+
+    // 일시정지 상태 설정 (전투 모드 등)
+    public void SetPaused(bool paused)
+    {
+        isPaused = paused;
     }
 
     // 클릭한 칸이 기물이면 가능 경로를 켜고, 하이라이트 칸이면 그쪽으로 이동한다.

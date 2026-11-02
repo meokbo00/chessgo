@@ -18,6 +18,9 @@ public class EnemyControl : MonoBehaviour
     [Header("AI 동작 모드")]
     [SerializeField] private AIMode aiMode = AIMode.Random;
 
+    [Header("추적 대상(아무것도 안해두면 자동으로 플레이어를 추적)")]
+    [SerializeField] private EnemyControl captain; // 추적할 Captain (비어있으면 Hero 추적)
+
     private Vector3Int currentCell;
     private Vector3Int targetCell;
     private bool isMoving = false;
@@ -152,32 +155,45 @@ public class EnemyControl : MonoBehaviour
         StartMoveTo(nextCell);
     }
 
-    // 플레이어 추적 모드의 이동 결정
+    // 추적 모드의 이동 결정 (Captain 또는 Hero 추적)
     private Vector3Int DecideChaseMove()
     {
-        if (mapScanner == null || !mapScanner.HeroCell.HasValue)
+        if (mapScanner == null)
             return currentCell;
 
-        Vector3Int heroPos = mapScanner.HeroCell.Value;
+        // 추적 대상 결정: Captain이 있으면 Captain, 없으면 Hero
+        Vector3Int targetPos;
+        if (captain != null)
+        {
+            targetPos = captain.CurrentCell;
+        }
+        else if (mapScanner.HeroCell.HasValue)
+        {
+            targetPos = mapScanner.HeroCell.Value;
+        }
+        else
+        {
+            return currentCell;
+        }
 
-        // 플레이어에게 가장 가까운 칸 찾기
+        // 추적 대상에게 가장 가까운 칸 찾기
         Vector3Int bestCell = currentCell;
         float bestDistance = float.MaxValue;
 
-        // 가능한 칸 중 플레이어에게 가장 가까우면서 다른 Enemy와 충돌하지 않는 칸 선택
+        // 가능한 칸 중 추적 대상에게 가장 가까우면서 다른 Enemy와 충돌하지 않는 칸 선택
         foreach (var cell in cachedPossibleMoves)
         {
-            // 플레이어까지의 거리 계산
-            float distanceToHero = Vector3Int.Distance(cell, heroPos);
+            // 추적 대상까지의 거리 계산
+            float distanceToTarget = Vector3Int.Distance(cell, targetPos);
 
             // 다른 Enemy와 너무 가까운 칸은 피하기 (꼬임 방지)
             if (IsTooCloseToOtherEnemy(cell))
                 continue;
 
             // 더 가까운 칸이면 선택
-            if (distanceToHero < bestDistance)
+            if (distanceToTarget < bestDistance)
             {
-                bestDistance = distanceToHero;
+                bestDistance = distanceToTarget;
                 bestCell = cell;
             }
         }
@@ -188,10 +204,10 @@ public class EnemyControl : MonoBehaviour
             bestDistance = float.MaxValue;
             foreach (var cell in cachedPossibleMoves)
             {
-                float distanceToHero = Vector3Int.Distance(cell, heroPos);
-                if (distanceToHero < bestDistance)
+                float distanceToTarget = Vector3Int.Distance(cell, targetPos);
+                if (distanceToTarget < bestDistance)
                 {
-                    bestDistance = distanceToHero;
+                    bestDistance = distanceToTarget;
                     bestCell = cell;
                 }
             }
