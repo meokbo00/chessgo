@@ -15,6 +15,7 @@ public class CombatManager : MonoBehaviour
     private HeroControl heroControl;
     public BattleAreaMask battleAreaMask;
     public Button BattleStartBtn;
+    public BattleAreaScanner battleAreaScanner;
 
     private void Awake()
     {
@@ -65,6 +66,7 @@ public class CombatManager : MonoBehaviour
         // 모든 Enemy 멈추기
         StopAllEnemies();
         battleAreaMask.Show();
+        battleAreaScanner.ScanBattleArea();
         BattleStartBtn.gameObject.SetActive(true);
     }
 

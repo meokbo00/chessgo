@@ -18,8 +18,11 @@ public class EnemyControl : MonoBehaviour
     [Header("AI 동작 모드")]
     [SerializeField] private AIMode aiMode = AIMode.Random;
 
-    [Header("추적 대상(아무것도 안해두면 자동으로 플레이어를 추적)")]
-    [SerializeField] private EnemyControl captain; // 추적할 Captain (비어있으면 Hero 추적)
+    [Header("추적 설정")]
+    [SerializeField] private Transform chaseTarget; // 실제 추적할 대상
+
+    [Header("소속 Captain 설정")]
+    [SerializeField] private EnemyCaptainControl captain; // 자신이 소속된 Captain
 
     private Vector3Int currentCell;
     private Vector3Int targetCell;
@@ -44,7 +47,7 @@ public class EnemyControl : MonoBehaviour
         Chase        // 플레이어 추적 (확장용)
     }
 
-    private void Awake()
+    protected virtual void Awake()
     {
         if (mapScanner == null)
             mapScanner = FindFirstObjectByType<MapScanner>();
@@ -58,7 +61,7 @@ public class EnemyControl : MonoBehaviour
         moveTimer = moveInterval + randomOffset;
     }
 
-    private void Start()
+    protected virtual void Start()
     {
         if (grid == null)
         {
@@ -74,16 +77,27 @@ public class EnemyControl : MonoBehaviour
         // MapScanner에 Enemy 위치 등록
         if (mapScanner != null)
             mapScanner.RegisterEnemy(this, currentCell);
+            // 자신의 Captain에게 부하로 등록
+            if (captain != null)
+            {
+                captain.RegisterFollower(this);
+            }
     }
 
-    private void OnDestroy()
+protected virtual void OnDestroy()
+{
+    // 파괴 시 MapScanner에서 위치 제거
+    if (mapScanner != null)
+        mapScanner.UnregisterEnemy(this);
+
+    // Captain의 부하 목록에서도 제거
+    if (captain != null)
     {
-        // 파괴 시 MapScanner에서 위치 제거
-        if (mapScanner != null)
-            mapScanner.UnregisterEnemy(this);
+        captain.UnregisterFollower(this);
     }
+}
 
-    private void Update()
+    protected virtual void Update()
     {
         // 이동 중이면 위치 업데이트 (전투 모드일 때는 중단)
         if (isMoving)
@@ -154,68 +168,71 @@ public class EnemyControl : MonoBehaviour
         // 이동 시작
         StartMoveTo(nextCell);
     }
+// 추적 모드의 이동 결정
+private Vector3Int DecideChaseMove()
+{
+    if (mapScanner == null)
+        return currentCell;
 
-    // 추적 모드의 이동 결정 (Captain 또는 Hero 추적)
-    private Vector3Int DecideChaseMove()
+    // 추적 대상의 위치 결정
+    Vector3Int targetPos;
+
+    if (chaseTarget != null)
     {
-        if (mapScanner == null)
-            return currentCell;
+        // Inspector에 지정한 오브젝트를 추적
+        targetPos = grid.WorldToCell(chaseTarget.position);
+    }
+    else if (mapScanner.HeroCell.HasValue)
+    {
+        // 추적 대상이 비어 있으면 기존처럼 Hero 추적
+        targetPos = mapScanner.HeroCell.Value;
+    }
+    else
+    {
+        return currentCell;
+    }
 
-        // 추적 대상 결정: Captain이 있으면 Captain, 없으면 Hero
-        Vector3Int targetPos;
-        if (captain != null)
-        {
-            targetPos = captain.CurrentCell;
-        }
-        else if (mapScanner.HeroCell.HasValue)
-        {
-            targetPos = mapScanner.HeroCell.Value;
-        }
-        else
-        {
-            return currentCell;
-        }
+    // 추적 대상에게 가장 가까운 칸 찾기
+    Vector3Int bestCell = currentCell;
+    float bestDistance = float.MaxValue;
 
-        // 추적 대상에게 가장 가까운 칸 찾기
-        Vector3Int bestCell = currentCell;
-        float bestDistance = float.MaxValue;
+    // 가능한 칸 중 추적 대상에게 가장 가까우면서
+    // 다른 Enemy와 충돌하지 않는 칸 선택
+    foreach (var cell in cachedPossibleMoves)
+    {
+        float distanceToTarget = Vector3Int.Distance(cell, targetPos);
 
-        // 가능한 칸 중 추적 대상에게 가장 가까우면서 다른 Enemy와 충돌하지 않는 칸 선택
+        // 다른 Enemy와 너무 가까운 칸은 피하기
+        if (IsTooCloseToOtherEnemy(cell))
+            continue;
+
+        if (distanceToTarget < bestDistance)
+        {
+            bestDistance = distanceToTarget;
+            bestCell = cell;
+        }
+    }
+
+    // 모든 칸이 다른 Enemy와 너무 가까우면
+    // 가장 가까운 칸을 다시 선택
+    if (bestCell == currentCell && cachedPossibleMoves.Count > 0)
+    {
+        bestDistance = float.MaxValue;
+
         foreach (var cell in cachedPossibleMoves)
         {
-            // 추적 대상까지의 거리 계산
             float distanceToTarget = Vector3Int.Distance(cell, targetPos);
 
-            // 다른 Enemy와 너무 가까운 칸은 피하기 (꼬임 방지)
-            if (IsTooCloseToOtherEnemy(cell))
-                continue;
-
-            // 더 가까운 칸이면 선택
             if (distanceToTarget < bestDistance)
             {
                 bestDistance = distanceToTarget;
                 bestCell = cell;
             }
         }
-
-        // 모든 칸이 다른 Enemy와 너무 가까우면 그냥 가장 가까운 칸 선택
-        if (bestCell == currentCell && cachedPossibleMoves.Count > 0)
-        {
-            bestDistance = float.MaxValue;
-            foreach (var cell in cachedPossibleMoves)
-            {
-                float distanceToTarget = Vector3Int.Distance(cell, targetPos);
-                if (distanceToTarget < bestDistance)
-                {
-                    bestDistance = distanceToTarget;
-                    bestCell = cell;
-                }
-            }
-        }
-
-        return bestCell;
     }
 
+    return bestCell;
+}
     // 다른 Enemy와 너무 가까운지 확인 (꼬임 방지)
     private bool IsTooCloseToOtherEnemy(Vector3Int cell)
     {
@@ -358,4 +375,5 @@ public class EnemyControl : MonoBehaviour
     public Vector3Int CurrentCell => currentCell;
     public Vector3Int TargetCell => targetCell;
     public bool IsMoving => isMoving;
+    public EnemyCaptainControl Captain => captain;
 }

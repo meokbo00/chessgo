@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5399506407871498577}
   m_Layer: 0
   m_Name: B_Bishop
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -111,6 +111,7 @@ MonoBehaviour:
   moveInterval: 2
   moveSpeed: 10
   aiMode: 2
+  captain: {fileID: 0}
 --- !u!114 &5399506407871498577
 MonoBehaviour:
   m_ObjectHideFlags: 0
