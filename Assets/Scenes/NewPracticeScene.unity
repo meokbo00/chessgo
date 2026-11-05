@@ -5876,12 +5876,16 @@ MonoBehaviour:
   followers:
   - {fileID: 1843344770}
   - {fileID: 1351689589}
-  placementInfo:
-  - follower: {fileID: 1843344770}
-    battlePosition: {x: 1, y: 1}
-  - follower: {fileID: 1351689589}
-    battlePosition: {x: 2, y: 2}
-  captainBattlePosition: {x: 0, y: 0}
+  formation:
+  - unit: {fileID: 1843344770}
+    x: 4
+    y: 8
+  - unit: {fileID: 1351689589}
+    x: 5
+    y: 8
+  - unit: {fileID: 1667777245}
+    x: 6
+    y: 8
 --- !u!1 &1712328964
 GameObject:
   m_ObjectHideFlags: 0
@@ -6985,10 +6989,13 @@ MonoBehaviour:
   height: 3
   followers:
   - {fileID: 1025651465}
-  placementInfo:
-  - follower: {fileID: 1025651465}
-    battlePosition: {x: 0, y: 0}
-  captainBattlePosition: {x: 2, y: 2}
+  formation:
+  - unit: {fileID: 1025651465}
+    x: 1
+    y: 1
+  - unit: {fileID: 2025246705}
+    x: 0
+    y: 0
 --- !u!1 &2032595399
 GameObject:
   m_ObjectHideFlags: 0

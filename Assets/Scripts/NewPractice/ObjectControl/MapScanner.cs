@@ -98,31 +98,45 @@ public class MapScanner : MonoBehaviour
         if (enemy == null)
             return;
 
-        // 기존 위치 제거 (이전 currentCell)
-        enemyPositions.Remove(enemy.CurrentCell);
-        // 새 위치 등록
+        // 이동 중이면 점유가 targetCell에 있어서 CurrentCell만 지우면
+        // 빈 칸에 유령 점유가 남는다. 이 기물이 점유한 칸을 모두 지운다.
+        RemoveAllEntriesOf(enemy);
         enemyPositions[cell] = enemy;
     }
 
     // Enemy의 이동을 시작할 때 호출 (이전 위치 제거, 타겟 위치 등록)
     public void OnEnemyMoveStart(EnemyControl enemy, Vector3Int fromCell, Vector3Int toCell)
     {
-        if (enemy == null)
-            return;
-
-        // 이전 위치 제거
-        enemyPositions.Remove(fromCell);
-        // 타겟 위치 등록 (이동 중이므로)
-        enemyPositions[toCell] = enemy;
+        RegisterEnemy(enemy, toCell);
     }
 
     // Enemy의 위치를 제거한다.
     public void UnregisterEnemy(EnemyControl enemy)
     {
+        RemoveAllEntriesOf(enemy);
+    }
+
+    private void RemoveAllEntriesOf(EnemyControl enemy)
+    {
         if (enemy == null)
             return;
 
-        enemyPositions.Remove(enemy.CurrentCell);
+        List<Vector3Int> keysToRemove = null;
+
+        foreach (var kvp in enemyPositions)
+        {
+            if (kvp.Value != enemy)
+                continue;
+
+            keysToRemove ??= new List<Vector3Int>();
+            keysToRemove.Add(kvp.Key);
+        }
+
+        if (keysToRemove == null)
+            return;
+
+        foreach (Vector3Int key in keysToRemove)
+            enemyPositions.Remove(key);
     }
 
     // 충돌 시 Enemy가 피할 수 있는 주변 칸을 찾는다.

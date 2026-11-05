@@ -85,26 +85,8 @@ public class BattleAreaMask : MonoBehaviour
             canvasRect == null)
             return;
 
-        // 1. 플레이어의 현재 Tilemap 셀 확인
-        Vector3Int playerCell =
-            groundTilemap.WorldToCell(player.position);
-
-// 2. 가로와 세로의 시작 셀 계산
-int leftOffset = (areaWidth - 1) / 2;
-int bottomOffset = (areaHeight - 1) / 2;
-
-Vector3Int minCell = new Vector3Int(
-    playerCell.x - leftOffset,
-    playerCell.y - bottomOffset,
-    0
-);
-
-// 마지막 셀 다음의 경계 좌표
-Vector3Int maxCell = new Vector3Int(
-    minCell.x + areaWidth,
-    minCell.y + areaHeight,
-    0
-);
+        if (!TryGetAreaBounds(out Vector3Int minCell, out Vector3Int maxCell))
+            return;
 
         // 3. Tilemap 기준 월드 좌표
         Vector3 worldBottomLeft =
@@ -211,6 +193,35 @@ Vector3Int maxCell = new Vector3Int(
         panel.anchoredPosition =
             (localMin + localMax) * 0.5f
             + animationOffset;
+    }
+
+    public bool TryGetAreaBounds(out Vector3Int minCell, out Vector3Int maxCell)
+    {
+        minCell = default;
+        maxCell = default;
+
+        if (player == null || groundTilemap == null)
+            return false;
+
+        Vector3Int playerCell =
+            groundTilemap.WorldToCell(player.position);
+
+        int leftOffset = (areaWidth - 1) / 2;
+        int bottomOffset = (areaHeight - 1) / 2;
+
+        minCell = new Vector3Int(
+            playerCell.x - leftOffset,
+            playerCell.y - bottomOffset,
+            0
+        );
+
+        maxCell = new Vector3Int(
+            minCell.x + areaWidth,
+            minCell.y + areaHeight,
+            0
+        );
+
+        return true;
     }
 
     void SetPanelsActive(bool active)

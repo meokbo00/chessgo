@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+
 // 전투 모드를 관리하는 싱글톤 매니저
 // 전투 모드 진입 시 모든 EnemyControl을 멈추고, 종료 시 다시 움직이게 함
 public class CombatManager : MonoBehaviour
@@ -20,6 +22,9 @@ public class CombatManager : MonoBehaviour
     // 원래 전투 영역 크기 저장 (복구용)
     private int originalAreaWidth;
     private int originalAreaHeight;
+
+    // 배치된 Captain과 그 부하들 (활성화 유지용)
+    private HashSet<EnemyControl> activeInBattle = new HashSet<EnemyControl>();
 
 
     private void Awake()
@@ -101,8 +106,11 @@ public class CombatManager : MonoBehaviour
             battleAreaMask.areaHeight = originalAreaHeight;
         }
 
-        // 모든 Enemy 재개
+        RestoreEnemyOverworldPositions();
+
+        // 모든 Enemy 재개 및 활성화
         ResumeAllEnemies();
+        EnableAllEnemies();
         battleAreaMask.Hide();
         BattleStartBtn.gameObject.SetActive(false);
     }
@@ -132,6 +140,18 @@ public class CombatManager : MonoBehaviour
         // Hero도 멈추기
         if (heroControl != null)
             heroControl.SetPaused(true);
+    }
+
+    private void RestoreEnemyOverworldPositions()
+    {
+        if (allEnemies == null)
+            return;
+
+        foreach (var enemy in allEnemies)
+        {
+            if (enemy != null)
+                enemy.RestoreOverworldCell();
+        }
     }
 
     // 모든 Enemy와 Hero 재개
@@ -178,6 +198,24 @@ public class CombatManager : MonoBehaviour
                     battleAreaMask.Show();
 
                     Debug.Log($"전투 영역이 {newWidth}x{newHeight}로 변경되었습니다.");
+
+                    if (battleAreaMask.TryGetAreaBounds(out Vector3Int minCell, out _))
+                    {
+                        // 배치된 Captain과 부하들을 활성화 유지 목록에 추가
+                        activeInBattle.Clear();
+                        activeInBattle.Add(firstCaptain);
+                        foreach (var follower in firstCaptain.Followers)
+                        {
+                            if (follower != null)
+                                activeInBattle.Add(follower);
+                        }
+
+                        // 배치 실행
+                        firstCaptain.ApplyFormation(minCell);
+
+                        // 나머지 Enemy 비활성화
+                        DisableOtherEnemies();
+                    }
                 }
             }
             else
@@ -185,8 +223,36 @@ public class CombatManager : MonoBehaviour
                 Debug.Log("Captain이 없습니다.");
             }
         }
+    }
 
-        // EnemyCaptainControl에서 정보들을 받아와 다시 판을 짜고 전투 준비예정
+    // 배치되지 않은 Enemy 비활성화
+    private void DisableOtherEnemies()
+    {
+        foreach (var enemy in allEnemies)
+        {
+            if (enemy == null)
+                continue;
+
+            // 배치된 Captain이나 부하가 아니면 비활성화
+            if (!activeInBattle.Contains(enemy))
+            {
+                enemy.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    // 모든 Enemy 다시 활성화
+    private void EnableAllEnemies()
+    {
+        foreach (var enemy in allEnemies)
+        {
+            if (enemy != null)
+            {
+                enemy.gameObject.SetActive(true);
+            }
+        }
+
+        activeInBattle.Clear();
     }
 
     // 현재 전투 모드인지 확인

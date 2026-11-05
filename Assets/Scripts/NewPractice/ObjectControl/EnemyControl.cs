@@ -35,6 +35,9 @@ public class EnemyControl : MonoBehaviour
     // 전투 모드 일시정지 상태
     private bool isPaused = false;
 
+    // 전투 배치 전 오버월드 칸. 전투를 취소하면 여기로 되돌린다.
+    private Vector3Int? overworldCell;
+
     // 캐싱: 이동 가능한 칸 목록을 저장하여 매번 계산하지 않음
     private List<Vector3Int> cachedPossibleMoves = new List<Vector3Int>();
     private float cacheUpdateTime = 0f;
@@ -355,14 +358,45 @@ private Vector3Int DecideChaseMove()
     // 즉시 특정 칸으로 이동 (스폰, 텔레포트 등에 사용)
     public void TeleportTo(Vector3Int cell)
     {
-        if (!mapScanner.IsWalkable(cell))
+        if (mapScanner != null && !mapScanner.IsWalkable(cell))
             return;
 
+        PlaceAtCell(cell);
+    }
+
+    // 전투 배치처럼 지정 칸으로 즉시 옮긴다. MapScanner 위치도 함께 갱신한다.
+    public void PlaceAtCell(Vector3Int cell)
+    {
         currentCell = cell;
         targetCell = cell;
-        SnapToCell(cell);
         isMoving = false;
+
+        if (grid != null)
+            SnapToCell(cell);
+
+        if (mapScanner != null)
+            mapScanner.RegisterEnemy(this, currentCell);
+
         UpdatePossibleMovesCache();
+    }
+
+    // 전투 진형으로 옮기기 전에 오버월드 위치를 기억한다.
+    public void PlaceAtCellForBattle(Vector3Int cell)
+    {
+        if (!overworldCell.HasValue)
+            overworldCell = currentCell;
+
+        PlaceAtCell(cell);
+    }
+
+    // 전투를 취소하면 배치 전 칸으로 되돌린다.
+    public void RestoreOverworldCell()
+    {
+        if (!overworldCell.HasValue)
+            return;
+
+        PlaceAtCell(overworldCell.Value);
+        overworldCell = null;
     }
 
     // 위치를 해당 칸의 중심으로 정렬
