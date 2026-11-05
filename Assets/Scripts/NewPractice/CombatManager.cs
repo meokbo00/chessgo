@@ -14,8 +14,13 @@ public class CombatManager : MonoBehaviour
     private EnemyControl[] allEnemies;
     private HeroControl heroControl;
     public BattleAreaMask battleAreaMask;
-    public Button BattleStartBtn;
     public BattleAreaScanner battleAreaScanner;
+    public Button BattleStartBtn;
+
+    // 원래 전투 영역 크기 저장 (복구용)
+    private int originalAreaWidth;
+    private int originalAreaHeight;
+
 
     private void Awake()
     {
@@ -63,11 +68,21 @@ public class CombatManager : MonoBehaviour
         isInCombatMode = true;
         Debug.Log("[CombatManager] 전투 모드 진입");
 
+        // 원래 영역 크기 저장
+        if (battleAreaMask != null)
+        {
+            originalAreaWidth = battleAreaMask.areaWidth;
+            originalAreaHeight = battleAreaMask.areaHeight;
+        }
+
         // 모든 Enemy 멈추기
         StopAllEnemies();
         battleAreaMask.Show();
         battleAreaScanner.ScanBattleArea();
-        BattleStartBtn.gameObject.SetActive(true);
+        if (battleAreaScanner.battleEnemies.Count > 0)
+        {
+            BattleStartBtn.gameObject.SetActive(true);
+        }
     }
 
     // 전투 모드 종료
@@ -78,6 +93,13 @@ public class CombatManager : MonoBehaviour
 
         isInCombatMode = false;
         Debug.Log("[CombatManager] 전투 모드 종료");
+
+        // 원래 영역 크기 복구
+        if (battleAreaMask != null)
+        {
+            battleAreaMask.areaWidth = originalAreaWidth;
+            battleAreaMask.areaHeight = originalAreaHeight;
+        }
 
         // 모든 Enemy 재개
         ResumeAllEnemies();
@@ -124,6 +146,47 @@ public class CombatManager : MonoBehaviour
         // Hero도 재개
         if (heroControl != null)
             heroControl.SetPaused(false);
+    }
+
+    public void OnClickBattleScanBtn()
+    {
+        // 전투 감지 로직
+        Debug.Log("[CombatManager] 전투 감지 버튼 클릭");
+
+        // 스캔된 Captain 정보 받아오기
+        if (battleAreaScanner != null)
+        {
+            var captains = battleAreaScanner.GetCaptains();
+
+            if (captains.Count > 0)
+            {
+                // 첫 번째 Captain의 크기로 전투 영역 설정
+                var firstCaptain = captains[0];
+                int newWidth = firstCaptain.width;
+                int newHeight = firstCaptain.height;
+
+                Debug.Log($"Captain: {firstCaptain.name}, Width: {newWidth}, Height: {newHeight}");
+
+                // BattleAreaMask의 영역 크기 변경
+                if (battleAreaMask != null)
+                {
+                    battleAreaMask.areaWidth = newWidth;
+                    battleAreaMask.areaHeight = newHeight;
+
+                    // 전투 영역 다시 표시
+                    battleAreaMask.Hide();
+                    battleAreaMask.Show();
+
+                    Debug.Log($"전투 영역이 {newWidth}x{newHeight}로 변경되었습니다.");
+                }
+            }
+            else
+            {
+                Debug.Log("Captain이 없습니다.");
+            }
+        }
+
+        // EnemyCaptainControl에서 정보들을 받아와 다시 판을 짜고 전투 준비예정
     }
 
     // 현재 전투 모드인지 확인

@@ -8,122 +8,211 @@ public class BattleAreaScanner : MonoBehaviour
     [SerializeField] private BattleAreaMask battleAreaMask;
     [SerializeField] private MapScanner mapScanner;
 
+    // 전투 영역 안에 있는 적 목록 (외부 접근용)
+    public List<EnemyControl> battleEnemies = new List<EnemyControl>();
 
-public int ScanBattleArea()
-{
-    if (battleAreaMask == null || mapScanner == null)
+
+    public int ScanBattleArea()
     {
-        Debug.LogError("[BattleAreaScanner] 참조가 연결되지 않았습니다.");
-        return 0;
-    }
-
-    Vector3Int playerCell =
-        battleAreaMask.groundTilemap.WorldToCell(
-            battleAreaMask.player.position);
-
-    int leftOffset = (battleAreaMask.areaWidth - 1) / 2;
-    int bottomOffset = (battleAreaMask.areaHeight - 1) / 2;
-
-    Vector3Int minCell = new Vector3Int(
-        playerCell.x - leftOffset,
-        playerCell.y - bottomOffset,
-        0
-    );
-
-    Vector3Int maxCell = new Vector3Int(
-        minCell.x + battleAreaMask.areaWidth,
-        minCell.y + battleAreaMask.areaHeight,
-        0
-    );
-
-    // 1. 전투 영역 안에 있는 적 수집
-    List<EnemyControl> battleEnemies = new List<EnemyControl>();
-
-    foreach (var kvp in mapScanner.EnemyPositions)
-    {
-        EnemyControl enemy = kvp.Value;
-
-        if (enemy == null)
-            continue;
-
-        Vector3Int cell = enemy.CurrentCell;
-
-        bool isInside =
-            cell.x >= minCell.x && cell.x < maxCell.x &&
-            cell.y >= minCell.y && cell.y < maxCell.y;
-
-        if (isInside)
-            battleEnemies.Add(enemy);
-    }
-
-    // 2. 적 수 출력
-    Debug.Log($"========== 전투 구역 스캔 ==========");
-    Debug.Log($"전투 구역 내 적: 총 {battleEnemies.Count}명");
-
-    if (battleEnemies.Count == 0)
-    {
-        Debug.Log("전투 구역에 적이 없습니다.");
-        Debug.Log($"==================================");
-        return 0;
-    }
-
-    // 3. 적 이름 출력
-    string enemyNames = "";
-
-    foreach (EnemyControl enemy in battleEnemies)
-    {
-        enemyNames += enemy.name + ", ";
-    }
-
-    enemyNames = enemyNames.TrimEnd(',', ' ');
-
-    Debug.Log($"[적 목록] {enemyNames}");
-
-    // 4. Captain 중복 방지를 위한 HashSet
-    HashSet<EnemyCaptainControl> printedCaptains =
-        new HashSet<EnemyCaptainControl>();
-
-    foreach (EnemyControl enemy in battleEnemies)
-    {
-        EnemyCaptainControl captain;
-
-        // 현재 적이 Captain 본인인 경우
-        if (enemy is EnemyCaptainControl ownCaptain)
+        // 0. 참조 확인
+        if (battleAreaMask == null || mapScanner == null)
         {
-            captain = ownCaptain;
-        }
-        // 일반 대원인 경우 소속 Captain 확인
-        else
-        {
-            captain = enemy.Captain;
+            Debug.LogError("[BattleAreaScanner] 참조가 연결되지 않았습니다.");
+            return 0;
         }
 
-        // 소속 Captain이 없는 독립 대원
-        if (captain == null)
+        // 1. 플레이어의 현재 셀 확인
+        Vector3Int playerCell =
+            battleAreaMask.groundTilemap.WorldToCell(
+                battleAreaMask.player.position);
+
+        int leftOffset = (battleAreaMask.areaWidth - 1) / 2;
+        int bottomOffset = (battleAreaMask.areaHeight - 1) / 2;
+
+        Vector3Int minCell = new Vector3Int(
+            playerCell.x - leftOffset,
+            playerCell.y - bottomOffset,
+            0
+        );
+
+        Vector3Int maxCell = new Vector3Int(
+            minCell.x + battleAreaMask.areaWidth,
+            minCell.y + battleAreaMask.areaHeight,
+            0
+        );
+
+
+        // 2. 전투 영역 안에 있는 적 수집
+        battleEnemies.Clear();
+
+        foreach (var kvp in mapScanner.EnemyPositions)
         {
-            Debug.Log($"[Captain 정보] {enemy.name} → 소속 Captain 없음");
-            continue;
+            EnemyControl enemy = kvp.Value;
+
+            if (enemy == null)
+                continue;
+
+            Vector3Int cell = enemy.CurrentCell;
+
+            bool isInside =
+                cell.x >= minCell.x && cell.x < maxCell.x &&
+                cell.y >= minCell.y && cell.y < maxCell.y;
+
+            if (isInside)
+            {
+                battleEnemies.Add(enemy);
+            }
         }
 
-        // 이미 출력한 Captain이면 건너뜀
-        if (!printedCaptains.Add(captain))
-            continue;
 
-        // Captain 본인인지, 해당 Captain의 부하인지 구분
-        if (enemy == captain)
+        // 3. 적 수 출력
+        Debug.Log("========== 전투 구역 스캔 ==========");
+        Debug.Log($"전투 구역 내 적: 총 {battleEnemies.Count}명");
+
+        if (battleEnemies.Count == 0)
         {
-            Debug.Log($"[Captain 정보] {captain.name} → 본인이 Captain");
+            Debug.Log("전투 구역에 적이 없습니다.");
+            Debug.Log("==================================");
+            return 0;
         }
-        else
+
+
+        // 4. 적 이름 출력
+        string enemyNames = "";
+
+        foreach (EnemyControl enemy in battleEnemies)
         {
-            Debug.Log($"[Captain 정보] {captain.name}");
+            enemyNames += enemy.name + ", ";
         }
+
+        enemyNames = enemyNames.TrimEnd(',', ' ');
+
+        Debug.Log($"[적 목록] {enemyNames}");
+
+
+        // 5. Captain 정보 수집
+        List<EnemyCaptainControl> captains =
+            new List<EnemyCaptainControl>();
+
+        // 이미 수집한 Captain 중복 방지
+        HashSet<EnemyCaptainControl> seenCaptains =
+            new HashSet<EnemyCaptainControl>();
+
+        // 전투 영역 안에 Captain 본인이 있는지 확인
+        HashSet<EnemyCaptainControl> captainsInArea =
+            new HashSet<EnemyCaptainControl>();
+
+        // 소속 Captain이 없는 독립 적
+        List<EnemyControl> independentEnemies =
+            new List<EnemyControl>();
+
+        // 캡틴 목록을 저장할 리스트 (외부 반환용)
+        List<EnemyCaptainControl> captainList = new List<EnemyCaptainControl>();
+
+
+        foreach (EnemyControl enemy in battleEnemies)
+        {
+            EnemyCaptainControl captain;
+
+            // 현재 적이 Captain 본인인지 확인
+            if (enemy is EnemyCaptainControl ownCaptain)
+            {
+                captain = ownCaptain;
+
+                // Captain 본인이 전투 영역 안에 있음
+                captainsInArea.Add(ownCaptain);
+            }
+            else
+            {
+                // 일반 대원의 소속 Captain 확인
+                captain = enemy.Captain;
+            }
+
+
+            // 소속 Captain이 없는 독립 적
+            if (captain == null)
+            {
+                independentEnemies.Add(enemy);
+                continue;
+            }
+
+
+            // Captain 중복 없이 목록에 추가
+            if (seenCaptains.Add(captain))
+            {
+                captains.Add(captain);
+                captainList.Add(captain);
+            }
+        }
+
+
+        // 6. Captain 정보 출력
+        foreach (EnemyCaptainControl captain in captains)
+        {
+            if (captainsInArea.Contains(captain))
+            {
+                Debug.Log(
+                    $"[Captain 정보] {captain.name} → 본인이 Captain");
+            }
+            else
+            {
+                Debug.Log(
+                    $"[Captain 정보] 감지된 적의 소속 캡틴: {captain.name}");
+            }
+        }
+
+
+        // 7. 소속 Captain이 없는 적 출력
+        foreach (EnemyControl enemy in independentEnemies)
+        {
+            Debug.Log(
+                $"[Captain 정보] {enemy.name} → 소속 Captain 없음");
+        }
+
+
+        // 8. 스캔 종료
+        Debug.Log("==================================");
+
+        return battleEnemies.Count;
     }
 
-    Debug.Log($"==================================");
+    // 스캔된 Captain 목록 반환 (combatManaer에서 사용!!)
+    public List<EnemyCaptainControl> GetCaptains()
+    {
+        List<EnemyCaptainControl> captains = new List<EnemyCaptainControl>();
 
-    return battleEnemies.Count;
-}
+        // 이미 수집한 Captain 중복 방지
+        HashSet<EnemyCaptainControl> seenCaptains =
+            new HashSet<EnemyCaptainControl>();
+
+        foreach (EnemyControl enemy in battleEnemies)
+        {
+            EnemyCaptainControl captain;
+
+            // 현재 적이 Captain 본인인지 확인
+            if (enemy is EnemyCaptainControl ownCaptain)
+            {
+                captain = ownCaptain;
+            }
+            else
+            {
+                // 일반 대원의 소속 Captain 확인
+                captain = enemy.Captain;
+            }
+
+            // 소속 Captain이 없는 독립 적은 건너뜀
+            if (captain == null)
+                continue;
+
+            // Captain 중복 없이 목록에 추가
+            if (seenCaptains.Add(captain))
+            {
+                captains.Add(captain);
+            }
+        }
+
+        return captains;
+    }
 
 
     // 적이 소속된 Captain과 해당 Captain의 부하 목록 출력
@@ -134,7 +223,9 @@ public int ScanBattleArea()
 
         // Captain 본인이 아니라면 지정된 Captain을 가져옴
         if (captain == null)
+        {
             captain = enemy.Captain;
+        }
 
         // Captain이 없는 독립 대원이라면 종료
         if (captain == null)

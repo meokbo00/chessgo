@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5463100623917845774}
   - component: {fileID: 6801145519384476931}
-  - component: {fileID: 1266527172261431809}
   - component: {fileID: 8323660314589819170}
   m_Layer: 0
   m_Name: B_Knight
@@ -93,25 +92,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &1266527172261431809
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2295610581608642042}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 385bad7dcd726dc4585fd0fadb832ba3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyControl
-  mapScanner: {fileID: 0}
-  grid: {fileID: 0}
-  chessPiece: {fileID: 0}
-  moveInterval: 1
-  moveSpeed: 10
-  aiMode: 2
-  captain: {fileID: 0}
 --- !u!114 &8323660314589819170
 MonoBehaviour:
   m_ObjectHideFlags: 0

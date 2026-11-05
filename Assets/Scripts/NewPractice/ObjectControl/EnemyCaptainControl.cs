@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class EnemyCaptainControl : EnemyControl
 {
+    [Header("실제 전투 영역 크기")]
+    public int height = 9;
+    public int width = 9;
+
+
+
     [Header("Captain의 대원 목록")]
     [SerializeField] private List<EnemyControl> followers = new List<EnemyControl>();
 

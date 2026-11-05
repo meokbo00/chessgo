@@ -572,8 +572,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: B_Queen
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 6705862527485239286, guid: 226a89ac3d8bd464f9da078a9d7d1c1d, type: 3}
+    - target: {fileID: 8065139645584367736, guid: 226a89ac3d8bd464f9da078a9d7d1c1d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -4360,7 +4363,7 @@ GameObject:
   - component: {fileID: 767854052}
   - component: {fileID: 767854051}
   m_Layer: 5
-  m_Name: BattleStartBtn
+  m_Name: BattleScanBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4429,7 +4432,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 767854052}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1181367317}
+        m_TargetAssemblyTypeName: CombatManager, Assembly-CSharp
+        m_MethodName: OnClickBattleScanBtn
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &767854052
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4805,6 +4820,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BattleAreaScanner
   battleAreaMask: {fileID: 2052643608}
   mapScanner: {fileID: 480384510}
+  battleEnemies: []
 --- !u!1 &1006059463
 GameObject:
   m_ObjectHideFlags: 0
@@ -4954,27 +4970,39 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7592332343957406452, guid: d81a39886ce69e34bacc27d8efd75a9e, type: 3}
-      propertyPath: grid
-      value: 
-      objectReference: {fileID: 837770771}
-    - target: {fileID: 7592332343957406452, guid: d81a39886ce69e34bacc27d8efd75a9e, type: 3}
-      propertyPath: captain
-      value: 
-      objectReference: {fileID: 2025246705}
-    - target: {fileID: 7592332343957406452, guid: d81a39886ce69e34bacc27d8efd75a9e, type: 3}
-      propertyPath: mapScanner
-      value: 
-      objectReference: {fileID: 480384510}
-    - target: {fileID: 7592332343957406452, guid: d81a39886ce69e34bacc27d8efd75a9e, type: 3}
-      propertyPath: chaseTarget
-      value: 
-      objectReference: {fileID: 2025246704}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1802792663940252355, guid: d81a39886ce69e34bacc27d8efd75a9e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1025651465}
   m_SourcePrefab: {fileID: 100100000, guid: d81a39886ce69e34bacc27d8efd75a9e, type: 3}
+--- !u!1 &1025651464 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1802792663940252355, guid: d81a39886ce69e34bacc27d8efd75a9e, type: 3}
+  m_PrefabInstance: {fileID: 1025651463}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1025651465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025651464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 385bad7dcd726dc4585fd0fadb832ba3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyControl
+  mapScanner: {fileID: 480384510}
+  grid: {fileID: 837770771}
+  chessPiece: {fileID: 0}
+  moveInterval: 2
+  moveSpeed: 5
+  aiMode: 2
+  chaseTarget: {fileID: 2025246704}
+  captain: {fileID: 2025246705}
 --- !u!1 &1181367316
 GameObject:
   m_ObjectHideFlags: 0
@@ -5006,8 +5034,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CombatManager
   startInCombatMode: 0
   battleAreaMask: {fileID: 2052643608}
-  BattleStartBtn: {fileID: 767854051}
   battleAreaScanner: {fileID: 1002821740}
+  BattleStartBtn: {fileID: 767854051}
 --- !u!4 &1181367318
 Transform:
   m_ObjectHideFlags: 0
@@ -5183,31 +5211,47 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2272108645863679310, guid: a4cb396465f74124488850ca88712b28, type: 3}
-      propertyPath: grid
-      value: 
-      objectReference: {fileID: 837770771}
-    - target: {fileID: 2272108645863679310, guid: a4cb396465f74124488850ca88712b28, type: 3}
-      propertyPath: captain
-      value: 
-      objectReference: {fileID: 1667777245}
-    - target: {fileID: 2272108645863679310, guid: a4cb396465f74124488850ca88712b28, type: 3}
-      propertyPath: mapScanner
-      value: 
-      objectReference: {fileID: 480384510}
-    - target: {fileID: 2272108645863679310, guid: a4cb396465f74124488850ca88712b28, type: 3}
-      propertyPath: chaseTarget
-      value: 
-      objectReference: {fileID: 1667777244}
     - target: {fileID: 3731652991806360621, guid: a4cb396465f74124488850ca88712b28, type: 3}
       propertyPath: m_Name
       value: B_Bishop
       objectReference: {fileID: 0}
+    - target: {fileID: 3731652991806360621, guid: a4cb396465f74124488850ca88712b28, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3731652991806360621, guid: a4cb396465f74124488850ca88712b28, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1351689589}
   m_SourcePrefab: {fileID: 100100000, guid: a4cb396465f74124488850ca88712b28, type: 3}
+--- !u!1 &1351689588 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3731652991806360621, guid: a4cb396465f74124488850ca88712b28, type: 3}
+  m_PrefabInstance: {fileID: 1351689587}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1351689589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1351689588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 385bad7dcd726dc4585fd0fadb832ba3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyControl
+  mapScanner: {fileID: 480384510}
+  grid: {fileID: 837770771}
+  chessPiece: {fileID: 0}
+  moveInterval: 2
+  moveSpeed: 5
+  aiMode: 2
+  chaseTarget: {fileID: 1667777244}
+  captain: {fileID: 1667777245}
 --- !u!1 &1372750535
 GameObject:
   m_ObjectHideFlags: 0
@@ -5640,18 +5684,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1266527172261431809, guid: 9480f537d3778d140940f6803c5146d7, type: 3}
-      propertyPath: grid
-      value: 
-      objectReference: {fileID: 837770771}
-    - target: {fileID: 1266527172261431809, guid: 9480f537d3778d140940f6803c5146d7, type: 3}
-      propertyPath: captain
-      value: 
-      objectReference: {fileID: 1667777245}
-    - target: {fileID: 1266527172261431809, guid: 9480f537d3778d140940f6803c5146d7, type: 3}
-      propertyPath: mapScanner
-      value: 
-      objectReference: {fileID: 480384510}
     - target: {fileID: 2295610581608642042, guid: 9480f537d3778d140940f6803c5146d7, type: 3}
       propertyPath: m_Name
       value: B_Knight
@@ -5697,7 +5729,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
-    - {fileID: 1266527172261431809, guid: 9480f537d3778d140940f6803c5146d7, type: 3}
+    - {fileID: 0}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -5839,7 +5871,17 @@ MonoBehaviour:
   aiMode: 0
   chaseTarget: {fileID: 0}
   captain: {fileID: 0}
-  followers: []
+  width: 9
+  height: 9
+  followers:
+  - {fileID: 1843344770}
+  - {fileID: 1351689589}
+  placementInfo:
+  - follower: {fileID: 1843344770}
+    battlePosition: {x: 1, y: 1}
+  - follower: {fileID: 1351689589}
+    battlePosition: {x: 2, y: 2}
+  captainBattlePosition: {x: 0, y: 0}
 --- !u!1 &1712328964
 GameObject:
   m_ObjectHideFlags: 0
@@ -6660,22 +6702,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: B_Rook
       objectReference: {fileID: 0}
-    - target: {fileID: 7026977045355838530, guid: 36d65e02c745c4045b0e79f87debd084, type: 3}
-      propertyPath: grid
-      value: 
-      objectReference: {fileID: 837770771}
-    - target: {fileID: 7026977045355838530, guid: 36d65e02c745c4045b0e79f87debd084, type: 3}
-      propertyPath: captain
-      value: 
-      objectReference: {fileID: 1667777245}
-    - target: {fileID: 7026977045355838530, guid: 36d65e02c745c4045b0e79f87debd084, type: 3}
-      propertyPath: mapScanner
-      value: 
-      objectReference: {fileID: 480384510}
-    - target: {fileID: 7026977045355838530, guid: 36d65e02c745c4045b0e79f87debd084, type: 3}
-      propertyPath: chaseTarget
-      value: 
-      objectReference: {fileID: 1667777244}
+    - target: {fileID: 3229890649945923172, guid: 36d65e02c745c4045b0e79f87debd084, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8607528424997640254, guid: 36d65e02c745c4045b0e79f87debd084, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.7
@@ -6719,8 +6749,36 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3229890649945923172, guid: 36d65e02c745c4045b0e79f87debd084, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1843344770}
   m_SourcePrefab: {fileID: 100100000, guid: 36d65e02c745c4045b0e79f87debd084, type: 3}
+--- !u!1 &1843344769 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3229890649945923172, guid: 36d65e02c745c4045b0e79f87debd084, type: 3}
+  m_PrefabInstance: {fileID: 1843344768}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1843344770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1843344769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 385bad7dcd726dc4585fd0fadb832ba3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyControl
+  mapScanner: {fileID: 480384510}
+  grid: {fileID: 837770771}
+  chessPiece: {fileID: 0}
+  moveInterval: 2
+  moveSpeed: 5
+  aiMode: 2
+  chaseTarget: {fileID: 1667777244}
+  captain: {fileID: 1667777245}
 --- !u!1 &1857154660
 GameObject:
   m_ObjectHideFlags: 0
@@ -6923,7 +6981,14 @@ MonoBehaviour:
   aiMode: 0
   chaseTarget: {fileID: 0}
   captain: {fileID: 0}
-  followers: []
+  width: 5
+  height: 3
+  followers:
+  - {fileID: 1025651465}
+  placementInfo:
+  - follower: {fileID: 1025651465}
+    battlePosition: {x: 0, y: 0}
+  captainBattlePosition: {x: 2, y: 2}
 --- !u!1 &2032595399
 GameObject:
   m_ObjectHideFlags: 0
@@ -7063,8 +7128,8 @@ MonoBehaviour:
   blackBottom: {fileID: 910811079}
   blackLeft: {fileID: 377614367}
   blackRight: {fileID: 1491573261}
-  areaWidth: 6
-  areaHeight: 6
+  areaWidth: 5
+  areaHeight: 5
   transitionDuration: 0.4
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8607528424997640254}
   - component: {fileID: 5613058544200643111}
-  - component: {fileID: 7026977045355838530}
   - component: {fileID: 612194832318866710}
   m_Layer: 0
   m_Name: B_Rook
@@ -93,25 +92,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &7026977045355838530
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3229890649945923172}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 385bad7dcd726dc4585fd0fadb832ba3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyControl
-  mapScanner: {fileID: 0}
-  grid: {fileID: 0}
-  chessPiece: {fileID: 0}
-  moveInterval: 2
-  moveSpeed: 10
-  aiMode: 2
-  captain: {fileID: 0}
 --- !u!114 &612194832318866710
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7245838553976004836}
   - component: {fileID: 6013458346027763895}
-  - component: {fileID: 6705862527485239286}
   - component: {fileID: 8367670019403367368}
   m_Layer: 0
   m_Name: B_Queen
@@ -93,25 +92,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &6705862527485239286
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8065139645584367736}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 385bad7dcd726dc4585fd0fadb832ba3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyControl
-  mapScanner: {fileID: 0}
-  grid: {fileID: 0}
-  chessPiece: {fileID: 0}
-  moveInterval: 2.5
-  moveSpeed: 10
-  aiMode: 2
-  captain: {fileID: 0}
 --- !u!114 &8367670019403367368
 MonoBehaviour:
   m_ObjectHideFlags: 0
